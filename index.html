@@ -32,7 +32,7 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const $=s=>document.querySelector(s),A=$("#app");
 
 let user=null,mode="login",myGroups=[],gid=null,G=null,members=[],bets=[],picks={},sends=[],tab="bets",markets=[],draft={},unsubs=[],err="";
-async function loadMarkets(){markets=[];try{const ix=await (await fetch("mercados/index.json",{cache:"no-store"})).json();
+async function loadMarkets(){markets=[];try{const ix=await (await fetch("index.json",{cache:"no-store"})).json();
  for(const f of ix.mercados){try{const m=await (await fetch("mercados/"+f,{cache:"no-store"})).json();if(!m.fecha_limite||new Date(m.fecha_limite)>new Date())markets.push(m);}catch(e){}}
  markets.sort((a,b)=>new Date(a.fecha_limite||8e15)-new Date(b.fecha_limite||8e15));}catch(e){}}
 const isOwner=()=>G&&G.owner===user.uid;
