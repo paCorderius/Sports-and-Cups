@@ -1,0 +1,304 @@
+{
+ "id": "final-mundial-2026",
+ "nombre": "Final Mundial 2026 (ejemplo)",
+ "evento": "España vs Argentina",
+ "fecha_limite": "2030-01-01T00:00:00-06:00",
+ "notas": "Mercado de ejemplo basado en el drinking game de la final. Las apuestas 'under' se resuelven al final del partido; si quieres embriagar durante el partido, elige overs. Tiempo Regular = 90 min + compensación.",
+ "apuestas": [
+  {
+   "texto": "Over 0.5 goles de un equipo",
+   "momio": 1.4,
+   "elegir": true
+  },
+  {
+   "texto": "Over 0.5 goles totales en una mitad (TR)",
+   "momio": 1.4,
+   "elegir": true
+  },
+  {
+   "texto": "Under 1.5 goles totales en una mitad (TR)",
+   "momio": 1.4,
+   "elegir": true
+  },
+  {
+   "texto": "Over 6.5 tiros de esquina totales",
+   "momio": 1.4,
+   "elegir": false
+  },
+  {
+   "texto": "Under 9.5 tiros de esquina totales",
+   "momio": 1.4,
+   "elegir": false
+  },
+  {
+   "texto": "Over 2.5 tarjetas totales",
+   "momio": 1.4,
+   "elegir": false
+  },
+  {
+   "texto": "Under 5.5 tarjetas totales",
+   "momio": 1.4,
+   "elegir": false
+  },
+  {
+   "texto": "Over 0.5 tiros a puerta delanteros",
+   "momio": 1.4,
+   "elegir": true
+  },
+  {
+   "texto": "Over 1.5 atajadas portero",
+   "momio": 1.4,
+   "elegir": true
+  },
+  {
+   "texto": "Over 2.5 fueras de lugar totales",
+   "momio": 1.4,
+   "elegir": false
+  },
+  {
+   "texto": "Suena Dynamite en el medio tiempo",
+   "momio": 1.4,
+   "elegir": false
+  },
+  {
+   "texto": "Partido se define en Tiempo Regular",
+   "momio": 1.75,
+   "elegir": false
+  },
+  {
+   "texto": "Over 1.5 goles totales",
+   "momio": 1.75,
+   "elegir": false
+  },
+  {
+   "texto": "Under 2.5 goles totales",
+   "momio": 1.75,
+   "elegir": false
+  },
+  {
+   "texto": "No ambos anotan",
+   "momio": 1.75,
+   "elegir": false
+  },
+  {
+   "texto": "España anota el primer gol",
+   "momio": 1.75,
+   "elegir": false
+  },
+  {
+   "texto": "Over 7.5 tiros de esquina totales",
+   "momio": 1.75,
+   "elegir": false
+  },
+  {
+   "texto": "Under 8.5 tiros de esquina totales",
+   "momio": 1.75,
+   "elegir": false
+  },
+  {
+   "texto": "Over 4.5 tiros de esquina de España",
+   "momio": 1.75,
+   "elegir": false
+  },
+  {
+   "texto": "Over 3.5 tiros de esquina de Argentina",
+   "momio": 1.75,
+   "elegir": false
+  },
+  {
+   "texto": "Over 3.5 tarjetas totales",
+   "momio": 1.75,
+   "elegir": false
+  },
+  {
+   "texto": "Under 4.5 tarjetas totales",
+   "momio": 1.75,
+   "elegir": false
+  },
+  {
+   "texto": "Over 0.5 tiros a puerta mediocentros",
+   "momio": 1.75,
+   "elegir": true
+  },
+  {
+   "texto": "Over 2.5 atajadas portero",
+   "momio": 1.75,
+   "elegir": true
+  },
+  {
+   "texto": "Over 3.5 fueras de lugar totales",
+   "momio": 1.75,
+   "elegir": false
+  },
+  {
+   "texto": "Partido no se define en Tiempo Regular",
+   "momio": 3.0,
+   "elegir": false
+  },
+  {
+   "texto": "Over 2.5 goles totales",
+   "momio": 3.0,
+   "elegir": false
+  },
+  {
+   "texto": "Under 1.5 goles totales",
+   "momio": 3.0,
+   "elegir": false
+  },
+  {
+   "texto": "Over 1.5 goles de un equipo",
+   "momio": 3.0,
+   "elegir": true
+  },
+  {
+   "texto": "Over 1.5 goles en una mitad (TR)",
+   "momio": 3.0,
+   "elegir": true
+  },
+  {
+   "texto": "Ambos anotan",
+   "momio": 3.0,
+   "elegir": false
+  },
+  {
+   "texto": "Argentina anota el primer gol",
+   "momio": 3.0,
+   "elegir": false
+  },
+  {
+   "texto": "Gol de mediocentro o delantero titular",
+   "momio": 3.0,
+   "elegir": true
+  },
+  {
+   "texto": "Penal para Argentina",
+   "momio": 3.0,
+   "elegir": false
+  },
+  {
+   "texto": "Over 8.5 tiros de esquina totales",
+   "momio": 3.0,
+   "elegir": false
+  },
+  {
+   "texto": "Under 7.5 tiros de esquina totales",
+   "momio": 3.0,
+   "elegir": false
+  },
+  {
+   "texto": "Over 5.5 tiros de esquina de España",
+   "momio": 3.0,
+   "elegir": false
+  },
+  {
+   "texto": "Over 4.5 tiros de esquina de Argentina",
+   "momio": 3.0,
+   "elegir": false
+  },
+  {
+   "texto": "Over 4.5 tarjetas totales",
+   "momio": 3.0,
+   "elegir": false
+  },
+  {
+   "texto": "Under 3.5 tarjetas totales",
+   "momio": 3.0,
+   "elegir": false
+  },
+  {
+   "texto": "Jugador Argentino o Gavi recibe tarjeta",
+   "momio": 3.0,
+   "elegir": true
+  },
+  {
+   "texto": "Over 1.5 tiros a puerta mediocentros o delanteros",
+   "momio": 3.0,
+   "elegir": true
+  },
+  {
+   "texto": "Over 0.5 tiros a puerta defensas",
+   "momio": 3.0,
+   "elegir": true
+  },
+  {
+   "texto": "Over 3.5 atajadas portero",
+   "momio": 3.0,
+   "elegir": true
+  },
+  {
+   "texto": "Over 4.5 fueras de lugar totales",
+   "momio": 3.0,
+   "elegir": false
+  },
+  {
+   "texto": "Suena Waka Waka en el medio tiempo",
+   "momio": 3.0,
+   "elegir": false
+  },
+  {
+   "texto": "Interrupción por espontáneo en la cancha",
+   "momio": 3.0,
+   "elegir": false
+  },
+  {
+   "texto": "Partido se define en Tiempo Extra",
+   "momio": 5.0,
+   "elegir": false
+  },
+  {
+   "texto": "Partido se define en Penaltis",
+   "momio": 5.0,
+   "elegir": false
+  },
+  {
+   "texto": "Over 3.5 goles totales",
+   "momio": 5.0,
+   "elegir": false
+  },
+  {
+   "texto": "Under 0.5 goles totales en TR",
+   "momio": 5.0,
+   "elegir": false
+  },
+  {
+   "texto": "Over 2.5 goles de un equipo",
+   "momio": 5.0,
+   "elegir": true
+  },
+  {
+   "texto": "Gol de suplente o defensa",
+   "momio": 5.0,
+   "elegir": true
+  },
+  {
+   "texto": "Asiste en cualquier momento",
+   "momio": 5.0,
+   "elegir": true
+  },
+  {
+   "texto": "Over 10.5 tiros de esquina totales",
+   "momio": 5.0,
+   "elegir": false
+  },
+  {
+   "texto": "Under 5.5 tiros de esquina totales",
+   "momio": 5.0,
+   "elegir": false
+  },
+  {
+   "texto": "Tarjeta roja",
+   "momio": 5.0,
+   "elegir": false
+  },
+  {
+   "texto": "Over 4.5 atajadas portero",
+   "momio": 5.0,
+   "elegir": true
+  },
+  {
+   "texto": "Over 6.5 fueras de lugar totales",
+   "momio": 5.0,
+   "elegir": false
+  }
+ ]
+}
