@@ -22,7 +22,9 @@ import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmai
 import {getFirestore,doc,getDoc,setDoc,updateDoc,addDoc,collection,onSnapshot,query,where,getDocs,arrayUnion,deleteDoc,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ===== 1) PEGA AQUÍ TU CONFIG DE FIREBASE =====
-const cfg={apiKey:"TU_API_KEY",authDomain:"TU_PROYECTO.firebaseapp.com",projectId:"TU_PROYECTO",appId:"TU_APP_ID"};
+const cfg={apiKey:"AIzaSyC4YQIjHJSqvIXFbDW8G5MiCu_VoqyXA4I",
+           authDomain:"sports-cup-802cb.firebaseapp.com",
+           projectId:"sports-cup-802cb",appId:"1:605487295857:web:a0e2d341a22601afbb1ad0"};
 // ==============================================
 const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
 
