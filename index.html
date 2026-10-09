@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Segundos de Cerveza 🍺</title>
+<style>
+:root{--bg:#fff;--fg:#1c1c1e;--card:#f3f3f6;--ac:#e8a200;--ok:#1a9d55;--bad:#d33;--bd:#d8d8de}
+@media(prefers-color-scheme:dark){:root{--bg:#141416;--fg:#f2f2f4;--card:#222226;--bd:#38383e}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px system-ui,sans-serif}
+#app{max-width:760px;margin:auto;padding:14px}
+h1,h2,h3{margin:.6em 0 .3em}.card{background:var(--card);border-radius:12px;padding:12px;margin:10px 0}
+input,select,button{font:inherit;padding:9px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--fg);max-width:100%}
+button{background:var(--ac);color:#000;border:0;font-weight:600;cursor:pointer}button.g{background:var(--card);color:var(--fg);border:1px solid var(--bd)}
+button:disabled{opacity:.4}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0}
+.bet{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd)}.bet label{flex:1}
+.tag{font-size:12px;padding:2px 8px;border-radius:9px;background:var(--ac);color:#000}.ok{color:var(--ok)}.bad{color:var(--bad)}
+table{width:100%;border-collapse:collapse}td,th{padding:6px;text-align:center;border-bottom:1px solid var(--bd)}td:first-child,th:first-child{text-align:left}
+.tabs{display:flex;gap:6px}.tabs button{flex:1}.sm{font-size:13px;opacity:.75}
+</style></head><body><div id="app"></div>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,updateProfile,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,doc,getDoc,setDoc,updateDoc,addDoc,collection,onSnapshot,query,where,getDocs,arrayUnion,deleteDoc,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ===== 1) PEGA AQUÍ TU CONFIG DE FIREBASE =====
+const cfg={apiKey:"TU_API_KEY",authDomain:"TU_PROYECTO.firebaseapp.com",projectId:"TU_PROYECTO",appId:"TU_APP_ID"};
+// ==============================================
+const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
+
+const tierOf=o=>o<1.5?"C":o<2?"B":o<4?"A":"S";
+const key=s=>(s||"").trim().toLowerCase().replace(/[^a-z0-9áéíóúñü ]/g,"")||"_";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $=s=>document.querySelector(s),A=$("#app");
+
+let user=null,mode="login",myGroups=[],gid=null,G=null,members=[],bets=[],picks={},sends=[],tab="bets",markets=[],draft={},unsubs=[],err="";
+async function loadMarkets(){markets=[];try{const ix=await (await fetch("mercados/index.json",{cache:"no-store"})).json();
+ for(const f of ix.mercados){try{const m=await (await fetch("mercados/"+f,{cache:"no-store"})).json();if(!m.fecha_limite||new Date(m.fecha_limite)>new Date())markets.push(m);}catch(e){}}
+ markets.sort((a,b)=>new Date(a.fecha_limite||8e15)-new Date(b.fecha_limite||8e15));}catch(e){}}
+const isOwner=()=>G&&G.owner===user.uid;
+const isOpen=()=>G&&!G.locked&&!(G.kickoff&&Date.now()>=G.kickoff);
+const sec=b=>G.tierSec[tierOf(b.odds)];
+
+onAuthStateChanged(auth,async u=>{user=u;if(u){const s=await getDoc(doc(db,"users",u.uid));myGroups=s.exists()?s.data().groups||[]:[];await loadMarkets();}render();});
+
+function render(){
+ if(!user)return A.innerHTML=authView();
+ A.innerHTML=(gid&&G)?groupView():homeView();
+}
+const hdr=()=>`<div class="row"><b style="flex:1">🍺 ${esc(user.displayName)}</b><button class="g" data-a="out">Salir</button></div>${err?`<p class="bad">${esc(err)}</p>`:""}`;
+
+function authView(){return `<h1>🍺 Segundos de Cerveza</h1><p>Apuesta segundos de trago con tus amigos.</p><div class="card">
+${mode==="reg"?`<div class="row"><input id="nm" placeholder="Tu nombre"></div>`:""}
+<div class="row"><input id="em" type="email" placeholder="Correo"></div><div class="row"><input id="pw" type="password" placeholder="Contraseña (6+)"></div>
+<div class="row"><button data-a="auth">${mode==="reg"?"Crear cuenta":"Entrar"}</button><button class="g" data-a="mode">${mode==="reg"?"Ya tengo cuenta":"Crear cuenta"}</button></div><p class="bad">${esc(err)}</p></div>`}
+
+function homeView(){return hdr()+`<h2>Mis grupos</h2>${myGroups.map(g=>`<div class="card row"><b style="flex:1">${esc(g.name)}</b><button data-a="open" data-id="${g.id}">Abrir</button></div>`).join("")||"<p class='sm'>Aún no estás en ningún grupo.</p>"}
+<div class="card"><h3>Crear grupo</h3><div class="row"><input id="gn" placeholder="Nombre del grupo (ej. Final Mundial)"></div>
+<div class="row"><select id="mk"><option value="">✏️ Crear mis propias apuestas (vacío)</option>${markets.map((m,i)=>`<option value="${i}">📋 ${esc(m.nombre)} · hasta ${m.fecha_limite?new Date(m.fecha_limite).toLocaleDateString():"∞"}</option>`).join("")}</select></div>
+${markets.map(m=>`<p class="sm"><b>${esc(m.nombre)}</b> (${esc(m.evento||"")}, ${m.apuestas.length} apuestas): ${esc(m.notas||"")}</p>`).join("")}
+<div class="row"><button data-a="create">Crear grupo</button></div></div>
+<div class="card"><h3>Unirme con código</h3><div class="row"><input id="gc" placeholder="Código" maxlength="6" style="text-transform:uppercase"><button data-a="join">Entrar</button></div></div>`}
+
+function groupView(){
+ const open=isOpen();
+ let h=hdr()+`<div class="row"><button class="g" data-a="back">←</button><h2 style="flex:1;margin:0">${esc(G.name)}</h2></div>
+ <p class="sm">Código: <b>${G.code}</b> · ${members.length} jugadores · Apuestas: <b class="${open?"ok":"bad"}">${open?"abiertas":"cerradas"}</b>${G.kickoff&&open?` · cierran ${new Date(G.kickoff).toLocaleString()}`:""}</p>
+ ${G.notas?`<p class="sm">ℹ️ ${esc(G.notas)}</p>`:""}<div class="tabs"><button class="${tab==="bets"?"":"g"}" data-a="tab" data-t="bets">Apostar</button><button class="${tab==="board"?"":"g"}" data-a="tab" data-t="board">Marcador</button>${isOwner()?`<button class="${tab==="adm"?"":"g"}" data-a="tab" data-t="adm">Admin</button>`:""}</div>`;
+ return h+(tab==="bets"?betsView(open):tab==="board"?boardView():admView());
+}
+
+function betsView(open){
+ const n=Object.keys(draft).length;
+ if(!bets.length)return `<p class="sm">Aún no hay apuestas. ${isOwner()?"Agrégalas en la pestaña Admin.":"El creador del grupo las agregará."}</p>`;
+ let h=`<p>Elegidas: <b class="${n>=G.min&&n<=G.max?"ok":"bad"}">${n}</b> (mín ${G.min}, máx ${G.max}). Ganas → mandas segundos; pierdes → bebes tú.</p>`;
+ for(const t of ["C","B","A","S"]){
+  const l=bets.filter(b=>tierOf(b.odds)===t);if(!l.length)continue;
+  h+=`<div class="card"><h3>Tier ${t} · ${G.tierSec[t]} seg</h3>`+l.map(b=>{
+   const on=b.id in draft,r=b.res&&b.res[key(draft[b.id])];
+   return `<div class="bet"><input type="checkbox" data-a="pick" data-id="${b.id}" ${on?"checked":""} ${open?"":"disabled"}><label>${esc(b.text)} <span class="sm">(${b.odds})</span> ${r===true?"✅":r===false?"❌":""}${b.nota?`<div class="sm">${esc(b.nota)}</div>`:""}</label>${b.choice&&on?`<input data-a="ch" data-id="${b.id}" placeholder="elige…" value="${esc(draft[b.id])}" ${open?"":"disabled"} size="12">`:""}</div>`}).join("")+`</div>`;
+ }
+ return h+`<button data-a="save" ${open&&n>=G.min&&n<=G.max?"":"disabled"}>Guardar mis apuestas</button>`;
+}
+
+function stats(){
+ const S={};members.forEach(m=>S[m.id]={name:m.name,w:0,l:0,sent:0,recv:0});
+ for(const [u,p] of Object.entries(picks))for(const [id,ch] of Object.entries(p.sel||{})){
+  const b=bets.find(x=>x.id===id),s=S[u];if(!b||!s)continue;const r=b.res&&b.res[key(ch)];
+  if(r===true)s.w+=sec(b);if(r===false)s.l+=sec(b);}
+ sends.forEach(x=>{if(S[x.from])S[x.from].sent+=x.sec;if(S[x.to])S[x.to].recv+=x.sec;});
+ return S;
+}
+function boardView(){
+ const S=stats(),me=S[user.uid]||{w:0,sent:0},left=me.w-me.sent;
+ let h=`<div class="card"><table><tr><th>Jugador</th><th>Ganó</th><th>Perdió</th><th>🍺 Debe beber</th></tr>${Object.values(S).map(s=>`<tr><td>${esc(s.name)}</td><td class="ok">${s.w}</td><td class="bad">${s.l}</td><td><b>${s.l+s.recv}s</b></td></tr>`).join("")}</table></div>`;
+ h+=`<div class="card"><h3>Enviar segundos</h3><p>Te quedan por enviar: <b>${left}s</b></p><div class="row"><select id="to">${members.filter(m=>m.id!==user.uid).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join("")}</select><input id="amt" type="number" min="1" max="${left}" value="${Math.min(left,1)}" style="width:80px"><button data-a="send" ${left>0?"":"disabled"}>Enviar</button></div></div>`;
+ return h+`<div class="card"><h3>Historial</h3>${sends.map(x=>`<div class="sm">${esc(nm(x.from))} → ${esc(nm(x.to))}: ${x.sec}s</div>`).join("")||"<span class='sm'>Sin envíos</span>"}</div>`;
+}
+const nm=u=>(members.find(m=>m.id===u)||{}).name||"?";
+
+function admView(){
+ const dt=G.kickoff?new Date(G.kickoff-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,16):"";
+ let h=`<div class="card"><h3>Inicio del partido</h3><div class="row"><input id="ko" type="datetime-local" value="${dt}"><button data-a="ko">Guardar cierre</button></div>
+ <div class="row"><button data-a="lock">${G.locked?"Reabrir apuestas":"Iniciar partido (cerrar apuestas)"}</button></div></div>
+ <div class="card"><h3>Reglas</h3><div class="row">Mín <input id="mn" type="number" value="${G.min}" style="width:70px"> Máx <input id="mx" type="number" value="${G.max}" style="width:70px"></div>
+ <div class="row">${["C","B","A","S"].map(t=>`${t}: <input id="ts${t}" type="number" value="${G.tierSec[t]}" style="width:60px">s`).join(" ")}</div><button data-a="rules">Guardar</button>
+ <p class="sm">Tier por momio: C &lt;1.5 · B &lt;2 · A &lt;4 · S ≥4</p></div>
+ <div class="card"><h3>Momios y resultados</h3><p class="sm">Cambia momios antes del partido. Al final marca ✅/❌.</p>`;
+ h+=bets.map(b=>{
+  const keys=[...new Set(Object.values(picks).map(p=>p.sel&&p.sel[b.id]).filter(v=>v!==undefined).map(v=>key(v)))];
+  return `<div class="bet" style="flex-wrap:wrap"><label style="min-width:100%">${esc(b.text)} <span class="tag">${tierOf(b.odds)}</span></label>
+  <input type="number" step="0.05" min="1.01" value="${b.odds}" data-a="odds" data-id="${b.id}" style="width:80px" ${G.locked?"disabled":""}>
+  <button class="g" data-a="del" data-id="${b.id}">🗑</button>
+  ${keys.map(k=>{const r=b.res&&b.res[k];return `<span class="sm">${k==="_"?"":esc(k)}</span><button class="g" data-a="res" data-id="${b.id}" data-k="${esc(k)}" data-v="1">${r===true?"✅":"✓"}</button><button class="g" data-a="res" data-id="${b.id}" data-k="${esc(k)}" data-v="0">${r===false?"❌":"✗"}</button>`}).join("")}</div>`}).join("");
+ return h+`</div><div class="card"><h3>Nueva apuesta</h3><div class="row"><input id="nt" placeholder="Texto"><input id="no" type="number" step="0.05" placeholder="Momio" style="width:90px"><input id="nn" placeholder="Nota (opcional)"><label><input type="checkbox" id="nc"> elegir</label><button data-a="add">Añadir</button></div></div>`;
+}
+
+// ===== Eventos =====
+A.addEventListener("input",e=>{const t=e.target;if(t.dataset.a==="ch")draft[t.dataset.id]=t.value;});
+A.addEventListener("change",e=>{const t=e.target,a=t.dataset.a;if(a==="pick"){t.checked?draft[t.dataset.id]="":delete draft[t.dataset.id];render();}
+ if(a==="odds"&&isOwner()){const v=parseFloat(t.value);if(v>1)updateDoc(doc(db,"groups",gid,"bets",t.dataset.id),{odds:v});}});
+A.addEventListener("click",async e=>{
+ const t=e.target.closest("[data-a]");if(!t||t.tagName==="INPUT")return;const a=t.dataset.a,v=s=>$(s)?.value;err="";
+ try{
+ if(a==="mode"){mode=mode==="reg"?"login":"reg";err="";return render();}
+ if(a==="auth"){
+  if(mode==="reg"){if(!v("#nm"))throw Error("Pon tu nombre");const c=await createUserWithEmailAndPassword(auth,v("#em"),v("#pw"));await updateProfile(c.user,{displayName:v("#nm").trim()});user=auth.currentUser;myGroups=[];render();}
+  else await signInWithEmailAndPassword(auth,v("#em"),v("#pw"));}
+ if(a==="out"){leave();await signOut(auth);}
+ if(a==="create"){await createGroup(v("#gn")||"Mi apuesta",markets[v("#mk")]);}
+ if(a==="join"){const q=await getDocs(query(collection(db,"groups"),where("code","==",v("#gc").toUpperCase().trim())));if(q.empty)throw Error("Código no encontrado");await joinGroup(q.docs[0].id,q.docs[0].data().name);}
+ if(a==="open")enter(t.dataset.id);
+ if(a==="back"){leave();render();}
+ if(a==="tab"){tab=t.dataset.t;render();}
+ if(a==="save"){await setDoc(doc(db,"groups",gid,"picks",user.uid),{sel:draft,name:user.displayName});err="";alert("Guardado ✅");}
+ if(a==="send"){const n=parseInt(v("#amt")),me=stats()[user.uid];if(!(n>0)||n>me.w-me.sent)throw Error("Cantidad inválida");await addDoc(collection(db,"groups",gid,"sends"),{from:user.uid,to:v("#to"),sec:n,at:Date.now()});}
+ if(a==="ko"){await updateDoc(doc(db,"groups",gid),{kickoff:v("#ko")?new Date(v("#ko")).getTime():null});}
+ if(a==="lock")await updateDoc(doc(db,"groups",gid),{locked:!G.locked});
+ if(a==="rules")await updateDoc(doc(db,"groups",gid),{min:+v("#mn"),max:+v("#mx"),tierSec:{C:+v("#tsC"),B:+v("#tsB"),A:+v("#tsA"),S:+v("#tsS")}});
+ if(a==="del")await deleteDoc(doc(db,"groups",gid,"bets",t.dataset.id));
+ if(a==="add"){const o=parseFloat(v("#no"));if(!v("#nt")||!(o>1))throw Error("Texto y momio >1");await addDoc(collection(db,"groups",gid,"bets"),{text:v("#nt"),odds:o,choice:$("#nc").checked,nota:v("#nn")||"",res:{}});}
+ if(a==="res"){const b=bets.find(x=>x.id===t.dataset.id),res={...(b.res||{})},k=t.dataset.k,val=t.dataset.v==="1";if(res[k]===val)delete res[k];else res[k]=val;await updateDoc(doc(db,"groups",gid,"bets",b.id),{res});}
+ }catch(x){err=x.message;render();}
+});
+
+async function createGroup(name,mk){
+ const ref=doc(collection(db,"groups")),code=Math.random().toString(36).slice(2,8).toUpperCase();
+ await setDoc(ref,{name,owner:user.uid,code,locked:false,kickoff:mk&&mk.fecha_limite?new Date(mk.fecha_limite).getTime():null,min:mk?.min||1,max:mk?.max||99,tierSec:mk?.segundos_por_tier||{C:1,B:2,A:4,S:8},evento:mk?.evento||"",notas:mk?.notas||""});
+ await setDoc(doc(db,"groups",ref.id,"members",user.uid),{name:user.displayName});
+ if(mk){const wb=writeBatch(db);for(const x of mk.apuestas)wb.set(doc(collection(db,"groups",ref.id,"bets")),{text:x.texto,odds:+x.momio,choice:!!x.elegir,nota:x.nota||"",res:{}});await wb.commit();}
+ await remember(ref.id,name);enter(ref.id);tab=mk?"bets":"adm";render();
+}
+async function joinGroup(id,name){await setDoc(doc(db,"groups",id,"members",user.uid),{name:user.displayName});await remember(id,name);enter(id);}
+async function remember(id,name){await setDoc(doc(db,"users",user.uid),{groups:arrayUnion({id,name})},{merge:true});if(!myGroups.find(g=>g.id===id))myGroups.push({id,name});}
+function leave(){unsubs.forEach(u=>u());unsubs=[];gid=G=null;members=[];bets=[];picks={};sends=[];draft={};}
+function enter(id){
+ leave();gid=id;tab="bets";let first=true;
+ const on=(ref,fn)=>unsubs.push(onSnapshot(ref,s=>{fn(s);render();},e=>{err=e.message;render();}));
+ on(doc(db,"groups",id),s=>{G=s.data();});
+ on(collection(db,"groups",id,"members"),s=>members=s.docs.map(d=>({id:d.id,...d.data()})));
+ on(collection(db,"groups",id,"bets"),s=>bets=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.odds-b.odds));
+ on(collection(db,"groups",id,"picks"),s=>{picks={};s.docs.forEach(d=>picks[d.id]=d.data());if(first&&picks[user.uid]){draft={...picks[user.uid].sel};}first=false;});
+ on(collection(db,"groups",id,"sends"),s=>sends=s.docs.map(d=>d.data()).sort((a,b)=>b.at-a.at));
+}
+</script></body></html>
