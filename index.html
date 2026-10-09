@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Segundos de Cerveza 🍺</title>
+<title>Sports and Cups🍺</title>
 <style>
 :root{--bg:#fff;--fg:#1c1c1e;--card:#f3f3f6;--ac:#e8a200;--ok:#1a9d55;--bad:#d33;--bd:#d8d8de}
 @media(prefers-color-scheme:dark){:root{--bg:#141416;--fg:#f2f2f4;--card:#222226;--bd:#38383e}}
@@ -49,14 +49,14 @@ function render(){
 }
 const hdr=()=>`<div class="row"><b style="flex:1">🍺 ${esc(user.displayName)}</b><button class="g" data-a="out">Salir</button></div>${err?`<p class="bad">${esc(err)}</p>`:""}`;
 
-function authView(){return `<h1>🍺 Segundos de Cerveza</h1><p>Apuesta segundos de trago con tus amigos.</p><div class="card">
+function authView(){return `<h1>🍺 Sports and Cups</h1><p>Apuesta segundos de trago con tus amigos.</p><div class="card">
 ${mode==="reg"?`<div class="row"><input id="nm" placeholder="Tu nombre"></div>`:""}
 <div class="row"><input id="em" type="email" placeholder="Correo"></div><div class="row"><input id="pw" type="password" placeholder="Contraseña (6+)"></div>
 <div class="row"><button data-a="auth">${mode==="reg"?"Crear cuenta":"Entrar"}</button><button class="g" data-a="mode">${mode==="reg"?"Ya tengo cuenta":"Crear cuenta"}</button></div><p class="bad">${esc(err)}</p></div>`}
 
 function homeView(){return hdr()+`<h2>Mis grupos</h2>${myGroups.map(g=>`<div class="card row"><b style="flex:1">${esc(g.name)}</b><button data-a="open" data-id="${g.id}">Abrir</button></div>`).join("")||"<p class='sm'>Aún no estás en ningún grupo.</p>"}
 <div class="card"><h3>Crear grupo</h3><div class="row"><input id="gn" placeholder="Nombre del grupo (ej. Final Mundial)"></div>
-<div class="row"><select id="mk"><option value="">✏️ Crear mis propias apuestas (vacío)</option>${markets.map((m,i)=>`<option value="${i}">📋 ${esc(m.nombre)} · hasta ${m.fecha_limite?new Date(m.fecha_limite).toLocaleDateString():"∞"}</option>`).join("")}</select></div>
+<div class="row"><select id="mk"><option value="">✏️ Crear mi propio mercado</option>${markets.map((m,i)=>`<option value="${i}">📋 ${esc(m.nombre)} · hasta ${m.fecha_limite?new Date(m.fecha_limite).toLocaleDateString():"∞"}</option>`).join("")}</select></div>
 ${markets.map(m=>`<p class="sm"><b>${esc(m.nombre)}</b> (${esc(m.evento||"")}, ${m.apuestas.length} apuestas): ${esc(m.notas||"")}</p>`).join("")}
 <div class="row"><button data-a="create">Crear grupo</button></div></div>
 <div class="card"><h3>Unirme con código</h3><div class="row"><input id="gc" placeholder="Código" maxlength="6" style="text-transform:uppercase"><button data-a="join">Entrar</button></div></div>`}
