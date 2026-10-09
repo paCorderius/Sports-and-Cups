@@ -93,7 +93,7 @@ function stats(){
 function boardView(){
  const S=stats(),me=S[user.uid]||{w:0,sent:0},left=me.w-me.sent;
  let h=`<div class="card"><table><tr><th>Jugador</th><th>Ganó</th><th>Perdió</th><th>🍺 Debe beber</th></tr>${Object.values(S).map(s=>`<tr><td>${esc(s.name)}</td><td class="ok">${s.w}</td><td class="bad">${s.l}</td><td><b>${s.l+s.recv}s</b></td></tr>`).join("")}</table></div>`;
- h+=`<div class="card"><h3>Enviar segundos</h3><p>Te quedan por enviar: <b>${left}s</b></p><div class="row"><select id="to">${members.filter(m=>m.id!==user.uid).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join("")}</select><input id="amt" type="number" min="1" max="${left}" value="${Math.min(left,1)}" style="width:80px"><button data-a="send" ${left>0?"":"disabled"}>Enviar</button></div></div>`;
+ h+=`<div class="card"><h3>Enviar segundos</h3><p>Te quedan por enviar: <b>${left}s</b></p><div class="row"><select id="to"><option value="">¿A quién? (elige)</option>${members.filter(m=>m.id!==user.uid).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join("")}</select><input id="amt" type="number" min="1" max="${left}" value="${Math.min(left,1)}" style="width:80px"><button data-a="send" ${left>0?"":"disabled"}>Enviar</button></div></div>`;
  return h+`<div class="card"><h3>Historial</h3>${sends.map(x=>`<div class="sm">${esc(nm(x.from))} → ${esc(nm(x.to))}: ${x.sec}s</div>`).join("")||"<span class='sm'>Sin envíos</span>"}</div>`;
 }
 const nm=u=>(members.find(m=>m.id===u)||{}).name||"?";
@@ -133,7 +133,7 @@ A.addEventListener("click",async e=>{
  if(a==="back"){leave();render();}
  if(a==="tab"){tab=t.dataset.t;render();}
  if(a==="save"){await setDoc(doc(db,"groups",gid,"picks",user.uid),{sel:draft,name:user.displayName});err="";alert("Guardado ✅");}
- if(a==="send"){const n=parseInt(v("#amt")),me=stats()[user.uid];if(!(n>0)||n>me.w-me.sent)throw Error("Cantidad inválida");await addDoc(collection(db,"groups",gid,"sends"),{from:user.uid,to:v("#to"),sec:n,at:Date.now()});}
+ if(a==="send"){const n=parseInt(v("#amt")),me=stats()[user.uid],to=v("#to");  if(!to||to===user.uid||!members.some(m=>m.id===to))throw Error("Elige a quién enviarle el trago");  if(!(n>0)||n>me.w-me.sent)throw Error("Cantidad inválida");  await addDoc(collection(db,"groups",gid,"sends"),{from:user.uid,to,sec:n,at:Date.now()});}
  if(a==="ko"){await updateDoc(doc(db,"groups",gid),{kickoff:v("#ko")?new Date(v("#ko")).getTime():null});}
  if(a==="lock")await updateDoc(doc(db,"groups",gid),{locked:!G.locked});
  if(a==="rules")await updateDoc(doc(db,"groups",gid),{min:+v("#mn"),max:+v("#mx"),tierSec:{C:+v("#tsC"),B:+v("#tsB"),A:+v("#tsA"),S:+v("#tsS")}});
